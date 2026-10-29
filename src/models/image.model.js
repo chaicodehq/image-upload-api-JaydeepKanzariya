@@ -25,19 +25,77 @@ import mongoose from 'mongoose';
  * - Text index on originalName and description for search
  */
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
 const imageSchema = new mongoose.Schema(
   {
-    // Your schema fields here
+    originalName: {
+      type: String,
+      required: [true, 'Original name is required'],
+      trim: true,
+      maxlength: [255, 'Original name must be at most 255 characters'],
+    },
+    filename: {
+      type: String,
+      required: [true, 'Filename is required'],
+      unique: true,
+    },
+    mimetype: {
+      type: String,
+      required: [true, 'Mimetype is required'],
+      enum: {
+        values: ['image/jpeg', 'image/png', 'image/gif'],
+        message: 'Mimetype must be image/jpeg, image/png or image/gif',
+      },
+    },
+    size: {
+      type: Number,
+      required: [true, 'Size is required'],
+      min: [1, 'Size must be at least 1 byte'],
+      max: [MAX_FILE_SIZE, 'Size must be at most 5MB'],
+    },
+    width: {
+      type: Number,
+      required: [true, 'Width is required'],
+      min: [1, 'Width must be at least 1'],
+    },
+    height: {
+      type: Number,
+      required: [true, 'Height is required'],
+      min: [1, 'Height must be at least 1'],
+    },
+    thumbnailFilename: {
+      type: String,
+      required: [true, 'Thumbnail filename is required'],
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Description must be at most 500 characters'],
+      default: '',
+    },
+    tags: {
+      type: [String],
+      default: [],
+      validate: {
+        validator: (arr) => arr.length <= 10,
+        message: 'Cannot have more than 10 tags',
+      },
+    },
+    uploadDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
-    // Schema options here
+    timestamps: true,
   }
 );
 
 // TODO: Add indexes
-// imageSchema.index({ uploadDate: -1 });
-// imageSchema.index({ mimetype: 1, uploadDate: -1 });
-// imageSchema.index({ originalName: 'text', description: 'text' });
+imageSchema.index({ uploadDate: -1 });
+imageSchema.index({ mimetype: 1, uploadDate: -1 });
+imageSchema.index({ originalName: 'text', description: 'text' });
 
 // TODO: Create and export the Image model
-// export const Image = mongoose.model('Image', imageSchema);
+export const Image = mongoose.model('Image', imageSchema);

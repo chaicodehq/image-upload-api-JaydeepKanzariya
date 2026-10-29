@@ -24,5 +24,22 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
  * 8. Return app
  */
 export function createApp() {
-  // Your code here
+  const app = express();
+
+  app.use(express.json());
+
+  const uploadsDir = path.join(__dirname, '../uploads');
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  fs.mkdirSync(path.join(uploadsDir, 'thumbnails'), { recursive: true });
+
+  app.get('/health', (req, res) => {
+    res.status(200).json({ ok: true });
+  });
+
+  app.use('/api/images', imageRoutes);
+
+  app.use(notFound);
+  app.use(errorHandler);
+
+  return app;
 }
